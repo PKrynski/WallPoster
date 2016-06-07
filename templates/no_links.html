@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <title>Zalogowanie pomyślne</title>
+    <meta charset="utf-8"/>
+</head>
+<body>
+    <div class="col-md-4 col-md-offset-4">
+
+        <h1 class="text-center">Witaj {{ username }}!</h1>
+
+        <form role="form" action='{{ app }}/newpost' method='POST'>
+            <div class="form-group">
+                <label for="newuserpost">Nowy wpis:</label>
+                <textarea class="form-control" rows="5" id="newuserpost" name="mypost"></textarea>
+            </div>
+            <button type="submit" class="btn btn-info pull-right">Opublikuj</button>
+        </form>
+
+        <p>Nie masz jeszcze żadnych wpisów.</p>
+        <p><a href="{{ app }}/logout">Wyloguj się</a></p>
+
+    </div>
+</body>
+</html>
