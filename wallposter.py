@@ -11,10 +11,11 @@ userList = {}
 posts = {}
 userPosts = {}
 
-from werkzeug.debug import DebuggedApplication
 
-app.debug = True
-app.wsgi_app = DebuggedApplication(app.wsgi_app, True)
+# from werkzeug.debug import DebuggedApplication
+
+# app.debug = True
+# app.wsgi_app = DebuggedApplication(app.wsgi_app, False)
 
 
 def userEnter(username):
@@ -28,6 +29,37 @@ def userEnter(username):
         return render_template('no_links.html', username=username, app=app_url)
 
     return render_template('login_success.html', username=username, links=links, app=app_url)
+
+
+def isPassCorrect(username, password):
+    if username in userList:
+
+        userpass = userList[username]
+        salt = userpass[:2]
+
+        hashed = hashlib.sha256(salt + password)
+        secret = hashed.digest()
+
+        if secret == userpass[2:]:
+            return True
+    return False
+
+
+def updatePass(username, password, password2):
+    conditions = [lambda s: any(c.isupper() for c in s),
+                  lambda s: any(c.islower() for c in s),
+                  lambda s: any(c.isdigit() for c in s),
+                  lambda s: len(s) > 7]
+
+    if password == password2 and all(cond(password) for cond in conditions):
+        salt = ''.join(random.sample(string.ascii_letters, 2))
+        hashed = hashlib.sha256(salt + password)
+        secret = hashed.digest()
+
+        userList[username] = salt + secret
+        return True
+
+    return False
 
 
 @app.route(app_url + '/')
@@ -54,19 +86,9 @@ def register():
         password = request.form.get('password')
         password2 = request.form.get('password2')
 
-        conditions = [lambda s: any(c.isupper() for c in s),
-                      lambda s: any(c.islower() for c in s),
-                      lambda s: any(c.isdigit() for c in s),
-                      lambda s: len(s) > 7]
-
         if username not in userList:
 
-            if password == password2 and all(cond(password) for cond in conditions):
-                salt = ''.join(random.sample(string.ascii_letters, 2))
-                hashed = hashlib.sha256(salt + password)
-                secret = hashed.digest()
-
-                userList[username] = salt + secret
+            if updatePass(username, password, password2):
                 return render_template('register_success.html', username=username, app=app_url)
 
         return render_template('register_fail.html', app=app_url)
@@ -80,19 +102,31 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        if username in userList:
-
-            userpass = userList[username]
-            salt = userpass[:2]
-
-            hashed = hashlib.sha256(salt + password)
-            secret = hashed.digest()
-
-            if secret == userpass[2:]:
-                template = userEnter(username)
-                return template
+        if isPassCorrect(username, password):
+            template = userEnter(username)
+            return template
 
         return render_template('login_failure.html', app=app_url)
+
+
+@app.route(app_url + '/changepass', methods=['GET', 'POST'])
+def changePassword():
+    if request.method == 'GET':
+        return render_template('changepass_form.html', app=app_url)
+
+    if request.method == 'POST':
+
+        username = session['username']
+        oldpassword = request.form.get('oldpassword')
+        password = request.form.get('password')
+        password2 = request.form.get('password2')
+
+        if isPassCorrect(username, oldpassword):
+
+            if updatePass(username, password, password2):
+                return render_template('changepass_success.html', username=username, app=app_url)
+
+        return render_template('changepass_fail.html', app=app_url)
 
 
 @app.route(app_url + '/newpost', methods=['POST'])
@@ -144,4 +178,6 @@ def logout():
 
 
 if __name__ == '__main__':
+    # context = ('secure.crt', 'secure.key')
+    # app.run(ssl_context=context)
     app.run()
