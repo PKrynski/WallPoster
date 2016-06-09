@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, abort
 from uuid import uuid4
 import random, string, datetime, hashlib
 
@@ -157,7 +157,7 @@ def newpost():
     # return "URL: " + currentpost + " newposted to: " + newID
 
     else:
-        return "No URL specified"
+        return abort(400)
 
 
 @app.route(app_url + '/p/<short>')
@@ -168,7 +168,7 @@ def move(short):
         post = content[:-20]
         return render_template('mypost.html', post=post, date=date, app=app_url)
 
-    return "Przykro mi, ale wpis: '" + short + "' nie istnieje :("
+    return abort(404)
 
 
 @app.route(app_url + '/logout')
