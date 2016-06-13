@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, redirect, session, abort
 from uuid import uuid4
-import random, string, datetime, hashlib
+import random, string, datetime, hashlib, time
 
 app_url = ''  # /krynskip/wallposter
 app = Flask(__name__)
@@ -110,6 +110,8 @@ def login():
         if isPassCorrect(username, password):
             template = userEnter(username)
             return template
+
+        time.sleep(3)
 
         return render_template('login_failure.html', app=app_url)
 
