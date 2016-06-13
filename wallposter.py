@@ -9,6 +9,7 @@ app.secret_key = 'Wl&(2WB*!NG(C#RAGU$#B'
 
 userList = {}
 posts = {}
+subjects = {}
 userPosts = {}
 
 
@@ -70,7 +71,11 @@ def index():
     username = session['username']
     try:
         links = userPosts[username]
-        return render_template('login_success.html', username=username, links=links, app=app_url)
+        allpostsubjects = []
+        for link in links:
+            allpostsubjects.append(subjects.get(link))
+
+        return render_template('login_success.html', username=username, data=zip(links,allpostsubjects), app=app_url)
     except KeyError:
         return render_template('no_links.html', username=username, app=app_url)
 
@@ -136,8 +141,9 @@ def newpost():
     username = session['username']
 
     currentpost = request.form.get('mypost')
+    postsubject = request.form.get('postsubject')
 
-    if currentpost:
+    if currentpost and postsubject:
 
         randomID = uuid4()
         newID = str(randomID)[:8]
@@ -147,6 +153,7 @@ def newpost():
         currentpost += post_time
 
         posts[newID] = currentpost
+        subjects[newID] = postsubject
         try:
             userPosts[username].append(newID)
         except KeyError:
@@ -163,10 +170,11 @@ def newpost():
 @app.route(app_url + '/p/<short>')
 def move(short):
     if short in posts:
+        title = subjects.get(short)
         content = posts.get(short)
         date = content[-20:]
         post = content[:-20]
-        return render_template('mypost.html', post=post, date=date, app=app_url)
+        return render_template('mypost.html', title=title, post=post, date=date, app=app_url)
 
     return abort(404)
 

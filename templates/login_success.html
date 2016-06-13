@@ -12,7 +12,11 @@
 
         <form role="form" action='{{ app }}/newpost' method='POST'>
             <div class="form-group">
-                <label for="newuserpost">Nowy wpis:</label>
+                <label for="subject">Temat wpisu:</label>
+                <input type="text" class="form-control" id="subject" name="postsubject">
+            </div>
+            <div class="form-group">
+                <label for="newuserpost">Treść wpisu:</label>
                 <textarea class="form-control" rows="5" id="newuserpost" name="mypost"></textarea>
             </div>
             <button type="submit" class="btn btn-info pull-right">Opublikuj</button>
@@ -20,8 +24,8 @@
 
         <p>Twoje wpisy:</p>
         <ol>
-            {% for item in links %}
-                <li><a href="{{ app }}/p/{{ item }}">{{ item }}</a>
+            {% for item,subject in data %}
+                <li><a href="{{ app }}/p/{{ item }}">{{ subject }}</a>
             {% endfor %}
         </ol>
         <p><a href="{{ app }}/logout">Wyloguj się</a></p>
