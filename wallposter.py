@@ -75,7 +75,7 @@ def index():
         for link in links:
             allpostsubjects.append(subjects.get(link))
 
-        return render_template('login_success.html', username=username, data=zip(links,allpostsubjects), app=app_url)
+        return render_template('login_success.html', username=username, data=zip(links, allpostsubjects), app=app_url)
     except KeyError:
         return render_template('no_links.html', username=username, app=app_url)
 
@@ -88,13 +88,18 @@ def register():
     if request.method == 'POST':
 
         username = request.form.get('username')
-        password = request.form.get('password')
-        password2 = request.form.get('password2')
 
-        if username not in userList:
+        if any(char in string.punctuation for char in username):
+            return render_template('register_fail.html', app=app_url)
+        else:
 
-            if updatePass(username, password, password2):
-                return render_template('register_success.html', username=username, app=app_url)
+            password = request.form.get('password')
+            password2 = request.form.get('password2')
+
+            if username not in userList:
+
+                if updatePass(username, password, password2):
+                    return render_template('register_success.html', username=username, app=app_url)
 
         return render_template('register_fail.html', app=app_url)
 

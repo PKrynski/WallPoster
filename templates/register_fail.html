@@ -6,11 +6,25 @@
     <meta charset="utf-8"/>
 </head>
 <body>
-    <div class="text-center">
-        <h1>Ups...</h1>
-        <p>Hasło jest za słabe, podane hasła nie są zgodne lub nazwa użytkownika jest już zajęta.</p>
-        <p>Spróbuj jeszcze raz.</p>
-        <a href="{{ app }}/register">Wróć.</a>
+    <div class="col-md-2 col-md-offset-5">
+
+        <div class="text-center">
+            <h1>Ups...</h1>
+            <p>Nie udało się Cię zarejestrować. Możliwe problemy:</p>
+        </div>
+
+        <ul class="list-group">
+            <li class="list-group-item list-group-item-warning">Hasło jest za słabe</li>
+            <li class="list-group-item list-group-item-warning">Podane hasła nie są zgodne</li>
+            <li class="list-group-item list-group-item-warning">Nazwa użytkownika jest już zajęta</li>
+            <li class="list-group-item list-group-item-warning">Nazwa użytkownika zawiera zabronione znaki</li>
+        </ul>
+
+        <div class="text-center">
+            <p>Spróbuj jeszcze raz.</p>
+            <a href="{{ app }}/register">Wróć.</a>
+        </div>
+
     </div>
 </body>
 </html>
