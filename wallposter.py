@@ -24,14 +24,19 @@ def userEnter(username):
     session['uid'] = uuid4()
     session['username'] = username
 
+    alldata = showAllPosts()
+
     try:
         links = userPosts[username]
+        allpostsubjects = []
+        for link in links:
+            allpostsubjects.append(subjects.get(link))
     except KeyError:
         userPosts[username] = []
-        return render_template('no_links.html', username=username, app=app_url)
+        return render_template('no_links.html', username=username, alldata=alldata, app=app_url)
 
-    return render_template('login_success.html', username=username, links=links, app=app_url)
-
+    return render_template('login_success.html', username=username, data=zip(links, allpostsubjects),
+                               alldata=alldata, app=app_url)
 
 def isPassCorrect(username, password):
     if username in userPassList:
@@ -63,13 +68,7 @@ def updatePass(username, password, password2):
 
     return False
 
-
-@app.route(app_url + '/')
-def index():
-    if 'username' not in session:
-        return redirect(app_url + '/login')
-
-    username = session['username']
+def showAllPosts():
 
     title = []
     post = []
@@ -85,6 +84,20 @@ def index():
         date.append(single_date)
         author.append(posters.get(item))
 
+    alldata = zip(title, post, author, date)
+
+    return alldata
+
+
+@app.route(app_url + '/')
+def index():
+    if 'username' not in session:
+        return redirect(app_url + '/login')
+
+    username = session['username']
+
+    alldata = showAllPosts()
+
     try:
         links = userPosts[username]
         allpostsubjects = []
@@ -92,9 +105,9 @@ def index():
             allpostsubjects.append(subjects.get(link))
 
         return render_template('login_success.html', username=username, data=zip(links, allpostsubjects),
-                               alldata=zip(title, post, author, date), app=app_url)
+                               alldata=alldata, app=app_url)
     except KeyError:
-        return render_template('no_links.html', username=username, alldata=zip(title, post, author, date), app=app_url)
+        return render_template('no_links.html', username=username, alldata=alldata, app=app_url)
 
 
 @app.route(app_url + '/register', methods=['GET', 'POST'])
