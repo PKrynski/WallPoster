@@ -12,12 +12,12 @@ allPosts = {}
 posters = {}
 subjects = {}
 userPosts = {}
+tokens = {}
 
+from werkzeug.debug import DebuggedApplication
 
-# from werkzeug.debug import DebuggedApplication
-
-# app.debug = True
-# app.wsgi_app = DebuggedApplication(app.wsgi_app, False)
+app.debug = True
+app.wsgi_app = DebuggedApplication(app.wsgi_app, False)
 
 
 def userEnter(username):
@@ -36,7 +36,8 @@ def userEnter(username):
         return render_template('no_links.html', username=username, alldata=alldata, app=app_url)
 
     return render_template('login_success.html', username=username, data=zip(links, allpostsubjects),
-                               alldata=alldata, app=app_url)
+                           alldata=alldata, app=app_url)
+
 
 def isPassCorrect(username, password):
     if username in userPassList:
@@ -68,8 +69,8 @@ def updatePass(username, password, password2):
 
     return False
 
-def showAllPosts():
 
+def showAllPosts():
     title = []
     post = []
     author = []
@@ -104,8 +105,8 @@ def index():
         for link in links:
             allpostsubjects.append(subjects.get(link))
 
-        return render_template('login_success.html', username=username, data=zip(links, allpostsubjects),
-                               alldata=alldata, app=app_url)
+        return render_template('login_success.html', username=username,
+                               data=zip(links, allpostsubjects), alldata=alldata, app=app_url)
     except KeyError:
         return render_template('no_links.html', username=username, alldata=alldata, app=app_url)
 
@@ -184,6 +185,7 @@ def newpost():
 
         randomID = uuid4()
         newID = str(randomID)[:8]
+        tokens[newID] = str(randomID)
 
         post_time = datetime.datetime.now().strftime(" %H:%M:%S %d-%m-%Y")
         currentpost += post_time
@@ -207,14 +209,44 @@ def newpost():
 @app.route(app_url + '/p/<short>')
 def move(short):
     if short in allPosts:
+
         title = subjects.get(short)
         content = allPosts.get(short)
         author = posters.get(short)
         date = content[-20:]
         post = content[:-20]
-        return render_template('mypost.html', title=title, post=post, author=author, date=date, app=app_url)
+        token = None
+        isHidden = "hidden"
+
+        if 'username' in session:
+            username = session['username']
+
+            if username == author:
+                token = tokens.get(short)
+                isHidden = ""
+
+        return render_template('mypost.html', title=title, post=post, author=author,
+                               date=date, id=short, token=token, isHidden=isHidden, app=app_url)
 
     return abort(404)
+
+
+@app.route(app_url + '/delete/<short>')
+def deletePost(short):
+    token = request.args.get('token')
+    print tokens
+    print token
+    print allPosts
+
+    if tokens[short] == token:
+        del allPosts[short]
+        del posters[short]
+        del subjects[short]
+        userPosts[session['username']].remove(short)
+
+    print allPosts
+
+    return redirect(app_url + '/')
 
 
 @app.route(app_url + '/logout')

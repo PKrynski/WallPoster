@@ -15,6 +15,13 @@
             Opublikowano: {{ date }} przez <strong>{{ author }}</strong>
         </p>
 
+        <form role="form" action='{{ app }}/delete/{{ id }}' method='GET' {{ isHidden }}>
+            <div class="form-group">
+                <input type="hidden" class="form-control" id="token" name="token" value="{{ token }}">
+            </div>
+            <button type="submit" class="btn btn-danger">Usuń wpis</button>
+        </form>
+
         <p>
             <a href="{{ app }}/">Wróć do panelu głównego.</a>
         </p>
