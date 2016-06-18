@@ -6,13 +6,16 @@
     <meta charset="utf-8"/>
 </head>
 <body>
-    <div class="col-md-4 col-md-offset-4">
 
-        <h1 class="text-center">Witaj {{ username }}!</h1>
+    <div class="row">
+         <h1 class="text-center">Witaj {{ username }}</h1>
+    </div>
+
+    <div class="col-md-3 col-md-offset-3">
 
         <form role="form" action='{{ app }}/newpost' method='POST'>
             <div class="form-group">
-                <label for="subject">Temat wpisu:</label>
+                <label for="subject">Nowy wpis:</label>
                 <input type="text" class="form-control" id="subject" name="postsubject" maxlength="64" required>
             </div>
             <div class="form-group">
@@ -27,5 +30,23 @@
         <p><a href="{{ app }}/changepass">Zmień hasło</a></p>
 
     </div>
+
+    <div class="col-md-3">
+
+        <h3>Wszystkie wpisy:</h3>
+        <ul class="list-group">
+            {% for title,post,author,date in alldata %}
+                <li class="list-group-item">
+                    <h3>{{ title }}</h3>
+                    <p>{{ post }}</p>
+                    <p>
+                        Opublikowano: {{ date }} przez <strong>{{ author }}</strong>
+                    </p>
+                </li>
+            {% endfor %}
+        </ul>
+
+    </div>
+
 </body>
 </html>

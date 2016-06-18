@@ -7,8 +7,9 @@ app_url = ''  # /krynskip/wallposter
 app = Flask(__name__)
 app.secret_key = 'Wl&(2WB*!NG(C#RAGU$#B'
 
-userList = {}
-posts = {}
+userPassList = {}
+allPosts = {}
+posters = {}
 subjects = {}
 userPosts = {}
 
@@ -33,9 +34,9 @@ def userEnter(username):
 
 
 def isPassCorrect(username, password):
-    if username in userList:
+    if username in userPassList:
 
-        userpass = userList[username]
+        userpass = userPassList[username]
         salt = userpass[:2]
 
         hashed = hashlib.sha256(salt + password)
@@ -57,7 +58,7 @@ def updatePass(username, password, password2):
         hashed = hashlib.sha256(salt + password)
         secret = hashed.digest()
 
-        userList[username] = salt + secret
+        userPassList[username] = salt + secret
         return True
 
     return False
@@ -69,15 +70,31 @@ def index():
         return redirect(app_url + '/login')
 
     username = session['username']
+
+    title = []
+    post = []
+    author = []
+    date = []
+
+    for item in allPosts:
+        title.append(subjects.get(item))
+        content = allPosts.get(item)
+        single_date = content[-20:]
+        single_post = content[:-20]
+        post.append(single_post)
+        date.append(single_date)
+        author.append(posters.get(item))
+
     try:
         links = userPosts[username]
         allpostsubjects = []
         for link in links:
             allpostsubjects.append(subjects.get(link))
 
-        return render_template('login_success.html', username=username, data=zip(links, allpostsubjects), app=app_url)
+        return render_template('login_success.html', username=username, data=zip(links, allpostsubjects),
+                               alldata=zip(title, post, author, date), app=app_url)
     except KeyError:
-        return render_template('no_links.html', username=username, app=app_url)
+        return render_template('no_links.html', username=username, alldata=zip(title, post, author, date), app=app_url)
 
 
 @app.route(app_url + '/register', methods=['GET', 'POST'])
@@ -96,7 +113,7 @@ def register():
             password = request.form.get('password')
             password2 = request.form.get('password2')
 
-            if username not in userList:
+            if username not in userPassList:
 
                 if updatePass(username, password, password2):
                     return render_template('register_success.html', username=username, app=app_url)
@@ -156,11 +173,12 @@ def newpost():
         newID = str(randomID)[:8]
 
         post_time = datetime.datetime.now().strftime(" %H:%M:%S %d-%m-%Y")
-        # print post_time
         currentpost += post_time
 
-        posts[newID] = currentpost
+        allPosts[newID] = currentpost
         subjects[newID] = postsubject
+        posters[newID] = username
+
         try:
             userPosts[username].append(newID)
         except KeyError:
@@ -168,7 +186,6 @@ def newpost():
             userPosts[username].append(newID)
 
         return render_template('newpost_complete.html', newID=newID, app=app_url)
-    # return "URL: " + currentpost + " newposted to: " + newID
 
     else:
         return abort(400)
@@ -176,12 +193,13 @@ def newpost():
 
 @app.route(app_url + '/p/<short>')
 def move(short):
-    if short in posts:
+    if short in allPosts:
         title = subjects.get(short)
-        content = posts.get(short)
+        content = allPosts.get(short)
+        author = posters.get(short)
         date = content[-20:]
         post = content[:-20]
-        return render_template('mypost.html', title=title, post=post, date=date, app=app_url)
+        return render_template('mypost.html', title=title, post=post, author=author, date=date, app=app_url)
 
     return abort(404)
 
