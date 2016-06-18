@@ -234,9 +234,6 @@ def move(short):
 @app.route(app_url + '/delete/<short>')
 def deletePost(short):
     token = request.args.get('token')
-    print tokens
-    print token
-    print allPosts
 
     if tokens[short] == token:
         del allPosts[short]
@@ -244,7 +241,7 @@ def deletePost(short):
         del subjects[short]
         userPosts[session['username']].remove(short)
 
-    print allPosts
+        return render_template('deleted.html', app=app_url)
 
     return redirect(app_url + '/')
 
