@@ -45,8 +45,7 @@ def isPassCorrect(username, password):
         userpass = userPassList[username]
         salt = userpass[:2]
 
-        hashed = hashlib.sha256(salt + password)
-        secret = hashed.digest()
+        secret = hashlib.pbkdf2_hmac('sha256', password, salt, 100000)
 
         if secret == userpass[2:]:
             return True
@@ -61,8 +60,8 @@ def updatePass(username, password, password2):
 
     if password == password2 and all(cond(password) for cond in conditions):
         salt = ''.join(random.sample(string.ascii_letters, 2))
-        hashed = hashlib.sha256(salt + password)
-        secret = hashed.digest()
+
+        secret = hashlib.pbkdf2_hmac('sha256', password, salt, 100000)
 
         userPassList[username] = salt + secret
         return True
@@ -236,10 +235,15 @@ def deletePost(short):
     token = request.args.get('token')
 
     if tokens[short] == token:
-        del allPosts[short]
-        del posters[short]
-        del subjects[short]
-        userPosts[session['username']].remove(short)
+
+        try:
+            del allPosts[short]
+            del posters[short]
+            del subjects[short]
+            userPosts[session['username']].remove(short)
+
+        except KeyError:
+            return abort(403)
 
         return render_template('deleted.html', app=app_url)
 
@@ -253,6 +257,5 @@ def logout():
 
 
 if __name__ == '__main__':
-    # context = ('secure.crt', 'secure.key')
-    # app.run(ssl_context=context)
+    # app.run(host='0.0.0.0', port=9070)     # for apache ssl
     app.run()
