@@ -12,12 +12,14 @@ allPosts = {}
 posters = {}
 subjects = {}
 userPosts = {}
+failedLogins = {}
 tokens = {}
 
-from werkzeug.debug import DebuggedApplication
 
-app.debug = True
-app.wsgi_app = DebuggedApplication(app.wsgi_app, False)
+# from werkzeug.debug import DebuggedApplication
+
+# app.debug = True
+# app.wsgi_app = DebuggedApplication(app.wsgi_app, False)
 
 
 def userEnter(username):
@@ -129,6 +131,7 @@ def register():
             if username not in userPassList:
 
                 if updatePass(username, password, password2):
+                    failedLogins[username] = 0
                     return render_template('register_success.html', username=username, app=app_url)
 
         return render_template('register_fail.html', app=app_url)
@@ -144,9 +147,16 @@ def login():
 
         if isPassCorrect(username, password):
             template = userEnter(username)
+            failedLogins[username] = 0
             return template
 
-        time.sleep(3)
+        try:
+            failedLogins[username] += 1
+        except KeyError:
+            return render_template('login_failure.html', app=app_url)
+
+        if failedLogins[username] > 2:
+            time.sleep(3)
 
         return render_template('login_failure.html', app=app_url)
 
