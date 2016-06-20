@@ -13,7 +13,7 @@ posters = {}
 subjects = {}
 userPosts = {}
 failedLogins = {}
-tokens = {}
+tokens = []
 
 
 # from werkzeug.debug import DebuggedApplication
@@ -21,6 +21,14 @@ tokens = {}
 # app.debug = True
 # app.wsgi_app = DebuggedApplication(app.wsgi_app, False)
 
+
+def prepareTokens():
+
+    for i in range(20):
+        token = uuid4()
+        tokens.append(str(token))
+
+prepareTokens()
 
 def userEnter(username):
     session['uid'] = uuid4()
@@ -93,6 +101,10 @@ def showAllPosts():
 
 @app.route(app_url + '/')
 def index():
+
+    if len(tokens) < 10:
+        prepareTokens()
+
     if 'username' not in session:
         return redirect(app_url + '/login')
 
@@ -194,7 +206,6 @@ def newpost():
 
         randomID = uuid4()
         newID = str(randomID)[:8]
-        tokens[newID] = str(randomID)
 
         post_time = datetime.datetime.now().strftime(" %H:%M:%S %d-%m-%Y")
         currentpost += post_time
@@ -231,7 +242,7 @@ def move(short):
             username = session['username']
 
             if username == author:
-                token = tokens.get(short)
+                token = random.choice(tokens)
                 isHidden = ""
 
         return render_template('mypost.html', title=title, post=post, author=author,
@@ -244,13 +255,14 @@ def move(short):
 def deletePost(short):
     token = request.args.get('token')
 
-    if tokens[short] == token:
+    if token in tokens:
 
         try:
             del allPosts[short]
             del posters[short]
             del subjects[short]
             userPosts[session['username']].remove(short)
+            tokens.remove(token)
 
         except KeyError:
             return abort(403)
